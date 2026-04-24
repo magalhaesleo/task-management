@@ -16,4 +16,5 @@
     build:
       context: backend/
       dockerfile: TaskManagementApi/Dockerfile
-
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
