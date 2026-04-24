@@ -1,6 +1,6 @@
 ﻿services:
   aspire-dashboard:
-    image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:13
     ports:
       - "18888:18888" # Dashboard UI
       - "18889:18889" # OTLP/gRPC endpoint
@@ -9,8 +9,7 @@
       - DOTNET_DASHBOARD_OTLP_ENDPOINT_URL=http://+:18889
       - DASHBOARD__FRONTEND__AUTHMODE=Unsecured # Use for local dev only
 
-  taskmanagementapi:
-    image: taskmanagementapi
+  task-management-api:
     ports:
      - "5000:8080"
     build:
