@@ -8,6 +8,16 @@
       - ASPNETCORE_URLS=http://+:18888
       - DOTNET_DASHBOARD_OTLP_ENDPOINT_URL=http://+:18889
       - DASHBOARD__FRONTEND__AUTHMODE=Unsecured # Use for local dev only
+    
+  db:
+    image: postgres:18.3
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: TaskManagementDb
+    ports:
+      - "5432:5432"
 
   task-management-api:
     ports:
@@ -17,3 +27,4 @@
       dockerfile: TaskManagementApi/Dockerfile
     environment:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
+      - ConnectionStrings__PostgresConnection=Server=db;Database=TaskManagementDb;User Id=user;Password=password;
