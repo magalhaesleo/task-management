@@ -1,3 +1,4 @@
+using Npgsql;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -15,8 +16,8 @@ public class Program
         builder.Services.AddOpenTelemetry()
             .ConfigureResource(resource => resource.AddService(builder.Environment.ApplicationName))
             .UseOtlpExporter()
-            .WithTracing(x => x.AddAspNetCoreInstrumentation())
-            .WithMetrics(x => x.AddAspNetCoreInstrumentation());
+            .WithTracing(x => x.AddAspNetCoreInstrumentation().AddNpgsql())
+            .WithMetrics(x => x.AddAspNetCoreInstrumentation().AddNpgsqlInstrumentation());
 
         builder.Services.AddHealthChecks()
             .AddNpgSql(builder.Configuration.GetConnectionString("PostgresConnection")!, name: "Postgres", tags: ["db"]);
