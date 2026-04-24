@@ -1,8 +1,11 @@
+using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using TaskManagementApi.Infrastructure;
+using TaskManagementApi.Tasks;
 
 namespace TaskManagementApi;
 
@@ -19,12 +22,15 @@ public class Program
             .WithTracing(x => x.AddAspNetCoreInstrumentation().AddNpgsql())
             .WithMetrics(x => x.AddAspNetCoreInstrumentation().AddNpgsqlInstrumentation());
 
-        builder.Services.AddHealthChecks()
-            .AddNpgSql(builder.Configuration.GetConnectionString("PostgresConnection")!, name: "Postgres", tags: ["db"]);
+        var postgresConnection = builder.Configuration.GetConnectionString("PostgresConnection")!;
+
+        builder.Services.AddHealthChecks().AddNpgSql(postgresConnection, name: "Postgres", tags: ["db"]);
 
         builder.Services.AddControllers();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
+        builder.Services.AddDbContext<TaskManagementContext>(opt => opt.UseNpgsql(postgresConnection));
+        builder.Services.AddTransient<ITaskService, TaskService>();
 
         var app = builder.Build();
 

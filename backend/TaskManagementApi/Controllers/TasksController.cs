@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using TaskManagementApi.Tasks;
 
 namespace TaskManagementApi.Controllers;
 
@@ -7,8 +8,8 @@ namespace TaskManagementApi.Controllers;
 public class TasksController : ControllerBase
 {
     [HttpGet]
-    public IEnumerable<Task> Get()
+    public async Task<ActionResult> Get([FromServices]ITaskService taskService, CancellationToken cancellationToken)
     {
-        return [];
+        return Ok(await taskService.GetTasks(cancellationToken));
     }
 }
