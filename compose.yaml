@@ -1,0 +1,9 @@
+﻿services:
+  taskmanagementapi:
+    image: taskmanagementapi
+    ports:
+     - "5000:8080"
+    build:
+      context: backend/
+      dockerfile: TaskManagementApi/Dockerfile
+
