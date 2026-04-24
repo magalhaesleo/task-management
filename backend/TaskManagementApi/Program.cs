@@ -18,11 +18,16 @@ public class Program
             .WithTracing(x => x.AddAspNetCoreInstrumentation())
             .WithMetrics(x => x.AddAspNetCoreInstrumentation());
 
+        builder.Services.AddHealthChecks()
+            .AddNpgSql(builder.Configuration.GetConnectionString("PostgresConnection")!, name: "Postgres", tags: ["db"]);
+
         builder.Services.AddControllers();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 
         var app = builder.Build();
+
+        app.MapHealthChecks("/health");
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
