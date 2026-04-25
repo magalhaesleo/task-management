@@ -1,16 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
+using TaskManagementApi.Infrastructure;
 using TaskManagementApi.Tasks;
 
 namespace TaskManagementApi.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class TasksController(ITaskService taskService) : ControllerBase
+public class TasksController(ITaskRepository taskRepository) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult> Get(CancellationToken cancellationToken)
     {
-        return Ok(await taskService.GetTasks(cancellationToken));
+        return Ok(await taskRepository.GetTasks(cancellationToken));
     }
     
     [HttpGet("{id:guid}")]
@@ -18,7 +19,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
         [FromRoute] Guid id,
         CancellationToken cancellationToken)
     {
-        var task = await taskService.GetById(id, cancellationToken);
+        var task = await taskRepository.GetById(id, cancellationToken);
         if (task is null)
             return NotFound();
 
@@ -31,7 +32,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
         CancellationToken cancellationToken)
     {
         var task = taskRequest.ToTask();
-        await taskService.Add(task, cancellationToken);
+        await taskRepository.Add(task, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = task.Id }, task);
     }
     
@@ -41,7 +42,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
         [FromBody] bool completed,
         CancellationToken cancellationToken)
     {
-        var result = await taskService.Toggle(id, completed, cancellationToken);
+        var result = await taskRepository.Toggle(id, completed, cancellationToken);
         if (result)
             return Ok();
         

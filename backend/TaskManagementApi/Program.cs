@@ -30,7 +30,7 @@ public class Program
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
         builder.Services.AddDbContext<TaskManagementContext>(opt => opt.UseNpgsql(postgresConnection));
-        builder.Services.AddTransient<ITaskService, TaskService>();
+        builder.Services.AddTransient<ITaskRepository, TaskRepository>();
 
         var app = builder.Build();
 
