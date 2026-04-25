@@ -24,6 +24,17 @@
       timeout: 5s
       retries: 5
       start_period: 10s
+  
+  migration:
+    build:
+      context: backend/
+      dockerfile: TaskManagementApi/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - ConnectionStrings__PostgresConnection=Server=db;Database=TaskManagementDb;User Id=user;Password=password;GSS Encryption Mode=Disable;
+    entrypoint: ["./efbundle"]
 
   task-management-api:
     ports:
@@ -32,8 +43,8 @@
       context: backend/
       dockerfile: TaskManagementApi/Dockerfile
     depends_on:
-      db:
-        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
     environment:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
       - ConnectionStrings__PostgresConnection=Server=db;Database=TaskManagementDb;User Id=user;Password=password;
