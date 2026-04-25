@@ -8,6 +8,7 @@ public class TaskManagementContext(DbContextOptions dbContextOptions) : DbContex
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Tasks.Task>();
+        modelBuilder.Entity<Tasks.Task>()
+            .ToTable("Tasks");
     }
 }
