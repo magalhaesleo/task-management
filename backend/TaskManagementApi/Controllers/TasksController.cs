@@ -5,10 +5,10 @@ namespace TaskManagementApi.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class TasksController : ControllerBase
+public class TasksController(ITaskService taskService) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult> Get([FromServices]ITaskService taskService, CancellationToken cancellationToken)
+    public async Task<ActionResult> Get(CancellationToken cancellationToken)
     {
         return Ok(await taskService.GetTasks(cancellationToken));
     }
@@ -16,7 +16,6 @@ public class TasksController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<ActionResult> GetById(
         [FromRoute] Guid id,
-        [FromServices]ITaskService taskService,
         CancellationToken cancellationToken)
     {
         var task = await taskService.GetById(id, cancellationToken);
@@ -29,9 +28,10 @@ public class TasksController : ControllerBase
     [HttpPost]
     public async Task<ActionResult> AddTask(
         [FromBody] AddTaskRequest taskRequest,
-        [FromServices]ITaskService taskService, CancellationToken cancellationToken)
+        CancellationToken cancellationToken)
     {
-        var task = await taskService.Add(taskRequest, cancellationToken);
+        var task = taskRequest.ToTask();
+        await taskService.Add(task, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = task.Id }, task);
     }
     
@@ -39,7 +39,6 @@ public class TasksController : ControllerBase
     public async Task<ActionResult> Toggle(
         [FromRoute] Guid id,
         [FromBody] bool completed,
-        [FromServices]ITaskService taskService,
         CancellationToken cancellationToken)
     {
         var result = await taskService.Toggle(id, completed, cancellationToken);
