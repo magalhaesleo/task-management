@@ -1,38 +1,24 @@
-﻿using System.Data.Common;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.Extensions.DependencyInjection;
-using TaskManagementApi.Infrastructure;
+using Testcontainers.PostgreSql;
 
 namespace TaskManagementApi.Tests;
 
-public class TaskManagementApplicationFactory : WebApplicationFactory<Program>
+public class TaskManagementApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    private readonly PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder("postgres:18.3")
+        .Build();
+
+    public async ValueTask InitializeAsync()
     {
-        builder.ConfigureServices(services =>
-        {
-            var dbContextDescriptor = services.SingleOrDefault(
-                d => d.ServiceType == 
-                     typeof(IDbContextOptionsConfiguration<TaskManagementContext>));
+        await _postgreSqlContainer.StartAsync();
+    }
 
-            if (dbContextDescriptor is not null)
-                services.Remove(dbContextDescriptor);
+    protected override void ConfigureWebHost(IWebHostBuilder builder) =>
+        builder.UseSetting("ConnectionStrings:PostgresConnection", _postgreSqlContainer.GetConnectionString());
 
-            var dbConnectionDescriptor = services.SingleOrDefault(
-                d => d.ServiceType ==
-                     typeof(DbConnection));
-
-            if (dbConnectionDescriptor is not null)
-                services.Remove(dbConnectionDescriptor);
-            
-            var context = services.SingleOrDefault(d => d.ServiceType == typeof(TaskManagementContext));
-            if (context is not null)
-                services.Remove(context);
-
-            services.AddDbContext<TaskManagementContext>(opt => opt.UseInMemoryDatabase("TaskManagementDb"));
-        });
+    public new async ValueTask DisposeAsync()
+    {
+        await _postgreSqlContainer.StopAsync();
     }
 }
