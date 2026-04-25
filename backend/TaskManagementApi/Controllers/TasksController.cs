@@ -22,7 +22,7 @@ public class TasksController(ITaskRepository taskRepository) : ControllerBase
         if (task is null)
             return NotFound();
 
-        return Ok();
+        return Ok(task);
     }
     
     [HttpPost]
