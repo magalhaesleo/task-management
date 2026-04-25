@@ -3,20 +3,21 @@ using TaskManagementApi.Infrastructure;
 
 namespace TaskManagementApi.Tasks;
 
-public record AddTaskRequest(
-    [NotEmptyGuid]
-    Guid Id,
-    [StringLength(maximumLength: 255)]
-    string Title,
-    [StringLength(maximumLength: 1000)]
-    string Content)
+public class AddTaskRequest
 {
+    [NotEmptyGuid]
+    public Guid Id { get; init; }
+    [Required]
+    [StringLength(maximumLength: 255)]
+    public string? Title { get; init; }
+    [StringLength(maximumLength: 1000)]
+    public string? Content { get; init; }
     public Task ToTask()
     {
         return new Task()
         {
             Id = Id,
-            Title = Title,
+            Title = Title!,
             Content = Content,
             Completed = false,
             CreatedAt = DateTime.UtcNow

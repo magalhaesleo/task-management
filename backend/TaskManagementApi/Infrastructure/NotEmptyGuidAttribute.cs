@@ -6,10 +6,10 @@ public class NotEmptyGuidAttribute : ValidationAttribute
 {
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
-        if (value is Guid guid && guid == Guid.Empty)
-        {
-            return new ValidationResult("The field must not be an empty GUID.");
-        }
-        return ValidationResult.Success;
+        if (value is not Guid guid || guid != Guid.Empty)
+            return ValidationResult.Success;
+        
+        string[] memberNames = validationContext.MemberName is null ? [] : [validationContext.MemberName];
+        return new ValidationResult("The field must not be an empty GUID.", memberNames);
     }
 }
