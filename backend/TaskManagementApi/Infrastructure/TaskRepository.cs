@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace TaskManagementApi.Infrastructure;
 
@@ -10,7 +11,9 @@ public interface ITaskRepository
     Task<bool> Toggle(Guid id, bool completed, CancellationToken cancellationToken);
 }
 
-public class TaskRepository(TaskManagementContext dbContext) : ITaskRepository
+public class TaskRepository(
+    TaskManagementContext dbContext,
+    ILogger<TaskRepository> logger) : ITaskRepository
 {
     public async Task<IEnumerable<Tasks.Task>> GetTasks(CancellationToken cancellationToken)
     {
@@ -23,8 +26,15 @@ public class TaskRepository(TaskManagementContext dbContext) : ITaskRepository
 
     public async Task Add(Tasks.Task task, CancellationToken cancellationToken)
     {
-        await dbContext.Tasks.AddAsync(task, cancellationToken);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await dbContext.Tasks.AddAsync(task, cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
+        {
+            logger.LogWarning(ex, "Duplicate key exception while adding task.");
+        }
     }
 
     public async Task<Tasks.Task?> GetById(Guid id, CancellationToken cancellationToken)
