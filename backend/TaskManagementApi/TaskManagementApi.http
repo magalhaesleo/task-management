@@ -20,3 +20,11 @@ Content-Type: application/json
   "title": "Task Title",
   "content": "content"
 }
+
+### Toogle task completion
+
+PATCH {{TaskManagementApi_HostAddress}}/tasks/7dedb1b5-e158-47f6-8a60-a0dd613169e9
+Accept: application/json
+Content-Type: application/json
+
+true

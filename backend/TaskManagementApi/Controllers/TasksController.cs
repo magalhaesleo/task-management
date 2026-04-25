@@ -35,7 +35,7 @@ public class TasksController(ITaskRepository taskRepository) : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = task.Id }, task);
     }
     
-    [HttpPut("{id:guid}")]
+    [HttpPatch("{id:guid}")]
     public async Task<ActionResult> Toggle(
         [FromRoute] Guid id,
         [FromBody] bool completed,

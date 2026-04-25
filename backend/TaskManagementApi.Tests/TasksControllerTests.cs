@@ -167,7 +167,7 @@ public class TasksControllerTests
         await SeedTasks([task]);
         
         // Act
-        using var response = await _client.PutAsJsonAsync($"{TasksRoute}/{task.Id}", completed, TestContext.Current.CancellationToken);
+        using var response = await _client.PatchAsJsonAsync($"{TasksRoute}/{task.Id}", completed, TestContext.Current.CancellationToken);
         
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -183,7 +183,7 @@ public class TasksControllerTests
         var id = Guid.NewGuid();
         
         // Act
-        using var response = await _client.PutAsJsonAsync($"{TasksRoute}/{id}", true, TestContext.Current.CancellationToken);
+        using var response = await _client.PatchAsJsonAsync($"{TasksRoute}/{id}", true, TestContext.Current.CancellationToken);
         
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
