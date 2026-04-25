@@ -5,7 +5,6 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using TaskManagementApi.Infrastructure;
-using TaskManagementApi.Tasks;
 
 namespace TaskManagementApi;
 
@@ -15,7 +14,7 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
+        // Add Open telemetry instrumentation
         builder.Services.AddOpenTelemetry()
             .ConfigureResource(resource => resource.AddService(builder.Environment.ApplicationName))
             .UseOtlpExporter()
@@ -24,6 +23,7 @@ public class Program
 
         var postgresConnection = builder.Configuration.GetConnectionString("PostgresConnection")!;
 
+        // Add health checks
         builder.Services.AddHealthChecks().AddNpgSql(postgresConnection, name: "Postgres", tags: ["db"]);
 
         builder.Services.AddControllers();

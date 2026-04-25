@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using TaskManagementApi.Infrastructure;
-using TaskManagementApi.Tasks;
 
 namespace TaskManagementApi.Controllers;
 
@@ -28,7 +27,7 @@ public class TasksController(ITaskRepository taskRepository) : ControllerBase
     
     [HttpPost]
     public async Task<ActionResult> AddTask(
-        [FromBody] AddTaskRequest taskRequest,
+        [FromBody] Tasks.AddTaskRequest taskRequest,
         CancellationToken cancellationToken)
     {
         var task = taskRequest.ToTask();
