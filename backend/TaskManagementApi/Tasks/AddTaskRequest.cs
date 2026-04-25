@@ -1,6 +1,15 @@
-﻿namespace TaskManagementApi.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
+using TaskManagementApi.Infrastructure;
 
-public record AddTaskRequest(Guid Id, string Title, string Content)
+namespace TaskManagementApi.Tasks;
+
+public record AddTaskRequest(
+    [NotEmptyGuid]
+    Guid Id,
+    [StringLength(maximumLength: 255)]
+    string Title,
+    [StringLength(maximumLength: 1000)]
+    string Content)
 {
     public Task ToTask()
     {
