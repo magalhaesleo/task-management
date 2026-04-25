@@ -9,7 +9,7 @@ public record AddTaskRequest(Guid Id, string Title, string Content)
             Id = Id,
             Title = Title,
             Content = Content,
-            IsFlagged = false
+            Completed = false
         };
     }
 }
