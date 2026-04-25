@@ -104,6 +104,26 @@ public class TasksControllerTests
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
+    
+    [Fact]
+    public async Task Given_add_request_should_save_successfully()
+    {
+        // Arrange
+        var request = _fixture.Create<Tasks.AddTaskRequest>();
+        var expectedLocation = $"{_client.BaseAddress}tasks/{request.Id}";
+        
+        // Act
+        using var response = await _client.PostAsJsonAsync("tasks", request);
+        
+        // Assert
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.Equal(expectedLocation, response.Headers.Location?.ToString(), ignoreCase: true);
+        var task = await response.Content.ReadFromJsonAsync<Tasks.Task>();
+        Assert.Equal(request.Id, task?.Id);
+        Assert.Equal(request.Title, task?.Title);
+        Assert.Equal(request.Content, task?.Content);
+        Assert.False(task?.Completed);
+    }
 
     private Tasks.Task CreateTask(bool completed = false) =>
         _fixture.Build<Tasks.Task>()
