@@ -20,7 +20,7 @@ public class TasksController(ITaskRepository taskRepository) : ControllerBase
     {
         var task = await taskRepository.GetById(id, cancellationToken);
         if (task is null)
-            return NotFound();
+            return NotFound($"Task with ID {id} not found.");
 
         return Ok(task);
     }
@@ -41,10 +41,10 @@ public class TasksController(ITaskRepository taskRepository) : ControllerBase
         [FromBody] bool completed,
         CancellationToken cancellationToken)
     {
-        var result = await taskRepository.Toggle(id, completed, cancellationToken);
-        if (result)
-            return Ok();
+        var task = await taskRepository.Toggle(id, completed, cancellationToken);
+        if (task is null)
+            return NotFound($"Task with ID {id} not found.");
         
-        return NotFound();
+        return Ok(task);
     }
 }

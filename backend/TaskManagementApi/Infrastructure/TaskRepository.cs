@@ -8,7 +8,7 @@ public interface ITaskRepository
     Task<IEnumerable<Tasks.Task>> GetTasks(CancellationToken cancellationToken);
     Task Add(Tasks.Task task, CancellationToken cancellationToken);
     Task<Tasks.Task?> GetById(Guid id, CancellationToken cancellationToken);
-    Task<bool> Toggle(Guid id, bool completed, CancellationToken cancellationToken);
+    Task<Tasks.Task?> Toggle(Guid id, bool completed, CancellationToken cancellationToken);
 }
 
 public class TaskRepository(
@@ -49,13 +49,14 @@ public class TaskRepository(
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<bool> Toggle(Guid id, bool completed, CancellationToken cancellationToken)
+    public async Task<Tasks.Task?> Toggle(Guid id, bool completed, CancellationToken cancellationToken)
     {
-        var updatedRows = await dbContext
-            .Tasks
-            .Where(x => x.Id == id)
-            .ExecuteUpdateAsync(x => x.SetProperty(t => t.Completed, completed), cancellationToken);
+        var task = await dbContext.Tasks.FindAsync([id], cancellationToken: cancellationToken);
+        if (task is null || task.Completed == completed)
+            return task;
         
-        return updatedRows > 0;
+        task.Completed = completed;
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return task;
     }
 }
