@@ -138,10 +138,10 @@ public class TasksControllerTests
 
     public async Task DisposeAsync()
     {
-        var tasks = await _context.Set<Tasks.Task>().ToListAsync();
+        var tasks = await _context.Tasks.ToListAsync();
         if (tasks.Count != 0)
         {
-            _context.Set<Tasks.Task>().RemoveRange(tasks);
+            _context.Tasks.RemoveRange(tasks);
             await _context.SaveChangesAsync();
         }
 
