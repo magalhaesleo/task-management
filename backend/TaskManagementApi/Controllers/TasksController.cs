@@ -19,7 +19,11 @@ public class TasksController : ControllerBase
         [FromServices]ITaskService taskService,
         CancellationToken cancellationToken)
     {
-        return Ok(await taskService.GetById(id, cancellationToken));
+        var task = await taskService.GetById(id, cancellationToken);
+        if (task is null)
+            return NotFound();
+
+        return Ok();
     }
     
     [HttpPost]
@@ -38,7 +42,10 @@ public class TasksController : ControllerBase
         [FromServices]ITaskService taskService,
         CancellationToken cancellationToken)
     {
-        await taskService.Toggle(id, completed, cancellationToken);
-        return Ok();
+        var result = await taskService.Toggle(id, completed, cancellationToken);
+        if (result)
+            return Ok();
+        
+        return NotFound();
     }
 }
