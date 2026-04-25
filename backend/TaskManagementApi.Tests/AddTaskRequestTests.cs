@@ -41,14 +41,15 @@ public class AddTaskRequestTests
         Assert.Equal(nameof(AddTaskRequest.Id), Assert.Single(Assert.Single(validationResults).MemberNames));
     }
     
-    [Fact]
-    public void Given_request_without_title_should_return_error()
+    [Theory]
+    [MemberData(nameof(TitleData))]
+    public void Given_request_invalid_title_should_return_error(string? title)
     {
         // Arrange
         var request = new AddTaskRequest
         {
             Id = Guid.NewGuid(),
-            Title = null,
+            Title = title,
             Content = "Content",
         };
         
@@ -58,6 +59,13 @@ public class AddTaskRequestTests
         // Assert
         Assert.Equal(nameof(AddTaskRequest.Title), Assert.Single(Assert.Single(validationResults).MemberNames));
     }
+
+    public static TheoryData<string?> TitleData() =>
+    [
+        null as string,
+        string.Empty,
+        string.Concat(Enumerable.Repeat('a', 256))
+    ];
     
     [Fact]
     public void Given_request_without_content_should_have_no_errors()
@@ -75,6 +83,24 @@ public class AddTaskRequestTests
         
         // Assert
         Assert.Empty(validationResults);
+    }
+    
+    [Fact]
+    public void Given_request_invalid_content_should_return_error()
+    {
+        // Arrange
+        var request = new AddTaskRequest
+        {
+            Id = Guid.NewGuid(),
+            Title = "Title",
+            Content = string.Concat(Enumerable.Repeat('a', 1001)),
+        };
+        
+        // Act
+        var validationResults = ValidateModel(request);
+        
+        // Assert
+        Assert.Equal(nameof(AddTaskRequest.Content), Assert.Single(Assert.Single(validationResults).MemberNames));
     }
     
     private static List<ValidationResult> ValidateModel(object model)
