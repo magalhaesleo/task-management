@@ -8,6 +8,7 @@ public interface ITaskService
     Task<IEnumerable<Task>> GetTasks(CancellationToken cancellationToken);
     Task<Task> Add(AddTaskRequest taskRequest, CancellationToken cancellationToken);
     Task<Task?> GetById(Guid id, CancellationToken cancellationToken);
+    System.Threading.Tasks.Task Toggle(Guid id, bool completed, CancellationToken cancellationToken);
 }
 
 public class TaskService(TaskManagementContext dbContext) : ITaskService
@@ -16,7 +17,7 @@ public class TaskService(TaskManagementContext dbContext) : ITaskService
     {
         return await dbContext
             .Set<Task>()
-            .OrderBy(x => x.IsFlagged)
+            .OrderBy(x => x.Completed)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
     }
@@ -36,5 +37,13 @@ public class TaskService(TaskManagementContext dbContext) : ITaskService
             .Where(x => x.Id == id)
             .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async System.Threading.Tasks.Task Toggle(Guid id, bool completed, CancellationToken cancellationToken)
+    {
+        await dbContext
+            .Set<Task>()
+            .Where(x => x.Id == id)
+            .ExecuteUpdateAsync(x => x.SetProperty(t => t.Completed, completed), cancellationToken);
     }
 }

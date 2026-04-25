@@ -30,4 +30,15 @@ public class TasksController : ControllerBase
         var task = await taskService.Add(taskRequest, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = task.Id }, task);
     }
+    
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult> Toggle(
+        [FromRoute] Guid id,
+        [FromBody] bool completed,
+        [FromServices]ITaskService taskService,
+        CancellationToken cancellationToken)
+    {
+        await taskService.Toggle(id, completed, cancellationToken);
+        return Ok();
+    }
 }
