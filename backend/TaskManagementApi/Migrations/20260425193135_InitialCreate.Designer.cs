@@ -12,8 +12,8 @@ using TaskManagementApi.Infrastructure;
 namespace TaskManagementApi.Migrations
 {
     [DbContext(typeof(TaskManagementContext))]
-    [Migration("20260425184955_AddCreatedAtColumn")]
-    partial class AddCreatedAtColumn
+    [Migration("20260425193135_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -46,7 +46,7 @@ namespace TaskManagementApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Task");
+                    b.ToTable("Tasks", (string)null);
                 });
 #pragma warning restore 612, 618
         }
