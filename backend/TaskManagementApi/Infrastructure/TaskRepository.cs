@@ -33,6 +33,7 @@ public class TaskRepository(
         }
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
         {
+            // We don't care about duplicate keys
             logger.LogWarning(ex, "Duplicate key exception while adding task.");
         }
     }
