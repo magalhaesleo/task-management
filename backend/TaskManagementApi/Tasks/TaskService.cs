@@ -6,7 +6,7 @@ namespace TaskManagementApi.Tasks;
 public interface ITaskService
 {
     Task<IEnumerable<Task>> GetTasks(CancellationToken cancellationToken);
-    Task<Task> Add(AddTaskRequest taskRequest, CancellationToken cancellationToken);
+    System.Threading.Tasks.Task Add(Task task, CancellationToken cancellationToken);
     Task<Task?> GetById(Guid id, CancellationToken cancellationToken);
     Task<bool> Toggle(Guid id, bool completed, CancellationToken cancellationToken);
 }
@@ -22,12 +22,10 @@ public class TaskService(TaskManagementContext dbContext) : ITaskService
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<Task> Add(AddTaskRequest taskRequest, CancellationToken cancellationToken)
+    public async System.Threading.Tasks.Task Add(Task task, CancellationToken cancellationToken)
     {
-        var task = taskRequest.ToTask();
         await dbContext.Set<Task>().AddAsync(task, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
-        return task;
     }
 
     public async Task<Task?> GetById(Guid id, CancellationToken cancellationToken)
