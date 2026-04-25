@@ -15,7 +15,7 @@ public class TaskRepository(TaskManagementContext dbContext) : ITaskRepository
     public async Task<IEnumerable<Tasks.Task>> GetTasks(CancellationToken cancellationToken)
     {
         return await dbContext
-            .Set<Tasks.Task>()
+            .Tasks
             .OrderBy(x => x.Completed)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
@@ -23,14 +23,14 @@ public class TaskRepository(TaskManagementContext dbContext) : ITaskRepository
 
     public async Task Add(Tasks.Task task, CancellationToken cancellationToken)
     {
-        await dbContext.Set<Tasks.Task>().AddAsync(task, cancellationToken);
+        await dbContext.Tasks.AddAsync(task, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<Tasks.Task?> GetById(Guid id, CancellationToken cancellationToken)
     {
         return await dbContext
-            .Set<Tasks.Task>()
+            .Tasks
             .Where(x => x.Id == id)
             .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
@@ -39,7 +39,7 @@ public class TaskRepository(TaskManagementContext dbContext) : ITaskRepository
     public async Task<bool> Toggle(Guid id, bool completed, CancellationToken cancellationToken)
     {
         var updatedRows = await dbContext
-            .Set<Tasks.Task>()
+            .Tasks
             .Where(x => x.Id == id)
             .ExecuteUpdateAsync(x => x.SetProperty(t => t.Completed, completed), cancellationToken);
         
