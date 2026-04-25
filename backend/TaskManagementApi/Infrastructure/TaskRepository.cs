@@ -17,7 +17,6 @@ public class TaskRepository(
 {
     public async Task<IEnumerable<Tasks.Task>> GetTasks(CancellationToken cancellationToken)
     {
-        var c = dbContext.Database.GetDbConnection().ConnectionString;
         return await dbContext
             .Tasks
             .OrderBy(x => x.Completed)
@@ -29,7 +28,6 @@ public class TaskRepository(
     {
         try
         {
-            var c = dbContext.Database.GetDbConnection().ConnectionString;
             await dbContext.Tasks.AddAsync(task, cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
         }
