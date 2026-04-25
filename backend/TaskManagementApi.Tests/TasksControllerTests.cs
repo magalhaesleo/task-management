@@ -18,41 +18,46 @@ public class TasksControllerTests
 
     public TasksControllerTests(TaskManagementApplicationFactory factory)
     {
+        _client = factory.CreateClient();
         _scope = factory.Services.CreateScope();
         _context = _scope.ServiceProvider.GetRequiredService<TaskManagementContext>();
-        _client = factory.CreateClient();
     }
 
-    public Task InitializeAsync() => Task.CompletedTask;
+    public async ValueTask InitializeAsync()
+    {
+        await _context.Database.MigrateAsync();
+    }
     
     [Fact]
-    public async Task Given_request_when_database_is_empty_should_return_empty_list()
+    public async Task Given_get_all_request_when_database_is_empty_should_return_empty_list()
     {
         // Act
-        using var response = await _client.GetAsync(GetAllTasksRoute);
+        using var response = await _client.GetAsync(GetAllTasksRoute, TestContext.Current.CancellationToken);
         
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var tasks = await response.Content.ReadFromJsonAsync<Tasks.Task[]>();
+        var tasks = await response.Content.ReadFromJsonAsync<Tasks.Task[]>(TestContext.Current.CancellationToken);
         Assert.NotNull(tasks);
         Assert.Empty(tasks);
     }
 
     [Fact]
-    public async Task Given_request_should_have_expected_response()
+    public async Task Given_get_all_request_when_there_is_task_should_have_expected_response()
     {
         // Arrange
         var task = CreateTask();
         await SeedTasks([task]);
         
         // Act
-        using var response = await _client.GetAsync(GetAllTasksRoute);
+        using var response = await _client.GetAsync(GetAllTasksRoute, TestContext.Current.CancellationToken);
         
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var tasks = await response.Content.ReadFromJsonAsync<Tasks.Task[]>();
+        var tasks = await response.Content.ReadFromJsonAsync<Tasks.Task[]>(TestContext.Current.CancellationToken);
         Assert.NotNull(tasks);
-        Assert.Equivalent(task, Assert.Single(tasks));
+        var taskResponse = Assert.Single(tasks);
+        Assert.EquivalentWithExclusions(task, taskResponse, x => x.CreatedAt);
+        Assert.Equal(task.CreatedAt, taskResponse.CreatedAt, TimeSpan.FromSeconds(1));
     }
     
     [Fact]
@@ -64,11 +69,11 @@ public class TasksControllerTests
         await SeedTasks([completedTask, notCompletedTask]);
         
         // Act
-        using var response = await _client.GetAsync(GetAllTasksRoute);
+        using var response = await _client.GetAsync(GetAllTasksRoute, TestContext.Current.CancellationToken);
         
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var tasks = await response.Content.ReadFromJsonAsync<Tasks.Task[]>();
+        var tasks = await response.Content.ReadFromJsonAsync<Tasks.Task[]>(TestContext.Current.CancellationToken);
         Assert.NotNull(tasks);
         Assert.Collection(tasks,
             item => Assert.Equivalent(notCompletedTask.Id, item.Id),
@@ -84,12 +89,14 @@ public class TasksControllerTests
         await SeedTasks([taskOne, taskTwo]);
         
         // Act
-        using var response = await _client.GetAsync($"tasks/{taskTwo.Id}");
+        using var response = await _client.GetAsync($"tasks/{taskTwo.Id}", TestContext.Current.CancellationToken);
         
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var task = await response.Content.ReadFromJsonAsync<Tasks.Task>();
-        Assert.Equivalent(taskTwo, task);
+        var task = await response.Content.ReadFromJsonAsync<Tasks.Task>(TestContext.Current.CancellationToken);
+        Assert.NotNull(task);
+        Assert.EquivalentWithExclusions(taskTwo, task, x => x.CreatedAt);
+        Assert.Equal(taskTwo.CreatedAt, task.CreatedAt, TimeSpan.FromSeconds(1));
     }
     
     [Fact]
@@ -99,7 +106,7 @@ public class TasksControllerTests
         var id = Guid.NewGuid();
         
         // Act
-        using var response = await _client.GetAsync($"tasks/{id}");
+        using var response = await _client.GetAsync($"tasks/{id}", TestContext.Current.CancellationToken);
         
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -113,21 +120,64 @@ public class TasksControllerTests
         var expectedLocation = $"{_client.BaseAddress}tasks/{request.Id}";
         
         // Act
-        using var response = await _client.PostAsJsonAsync("tasks", request);
+        using var response = await _client.PostAsJsonAsync("tasks", request, TestContext.Current.CancellationToken);
         
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         Assert.Equal(expectedLocation, response.Headers.Location?.ToString(), ignoreCase: true);
-        var task = await response.Content.ReadFromJsonAsync<Tasks.Task>();
+        var task = await response.Content.ReadFromJsonAsync<Tasks.Task>(TestContext.Current.CancellationToken);
         Assert.Equal(request.Id, task?.Id);
         Assert.Equal(request.Title, task?.Title);
         Assert.Equal(request.Content, task?.Content);
         Assert.False(task?.Completed);
     }
+    
+        
+    [Fact]
+    public async Task Given_add_request_when_idempotence_conflict_occurs_should_return_created_status_code()
+    {
+        // Arrange
+        var databaseTask = CreateTask();
+        await SeedTasks([databaseTask]);
+        var request = _fixture.Build<Tasks.AddTaskRequest>()
+            .With(x => x.Id, databaseTask.Id)
+            .Create();
+        var expectedLocation = $"{_client.BaseAddress}tasks/{request.Id}";
+        
+        // Act
+        using var response = await _client.PostAsJsonAsync("tasks", request, TestContext.Current.CancellationToken);
+        
+        // Assert
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.Equal(expectedLocation, response.Headers.Location?.ToString(), ignoreCase: true);
+        var task = await response.Content.ReadFromJsonAsync<Tasks.Task>(TestContext.Current.CancellationToken);
+        Assert.Equal(request.Id, task?.Id);
+        Assert.Equal(request.Title, task?.Title);
+        Assert.Equal(request.Content, task?.Content);
+        Assert.False(task?.Completed);
+    }
+    
+    [Fact]
+    public async Task Given_toggle_request_should_have_expected_response()
+    {
+        // Arrange
+        var task = CreateTask(completed: false);
+        await SeedTasks([task]);
+        
+        // Act
+        using var response = await _client.PutAsJsonAsync($"tasks/{task.Id}", true, TestContext.Current.CancellationToken);
+        
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var updatedTask = await _context.Tasks.Where(x => x.Id == task.Id).AsNoTracking()
+            .SingleAsync(TestContext.Current.CancellationToken);
+        Assert.True(updatedTask.Completed);
+    }
 
     private Tasks.Task CreateTask(bool completed = false) =>
         _fixture.Build<Tasks.Task>()
             .With(x => x.Completed, completed)
+            .With(x => x.CreatedAt, DateTime.UtcNow)
             .Create();
 
     private async Task SeedTasks(IEnumerable<Tasks.Task> tasks)
@@ -136,15 +186,9 @@ public class TasksControllerTests
         await _context.SaveChangesAsync();
     }
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-        var tasks = await _context.Tasks.ToListAsync();
-        if (tasks.Count != 0)
-        {
-            _context.Tasks.RemoveRange(tasks);
-            await _context.SaveChangesAsync();
-        }
-
+        await _context.Tasks.ExecuteDeleteAsync();
         _scope.Dispose();
     }
 }
