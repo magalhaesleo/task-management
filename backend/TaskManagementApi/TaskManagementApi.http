@@ -1,6 +1,22 @@
 @TaskManagementApi_HostAddress = http://localhost:5000
 
+### Get all tasks
 GET {{TaskManagementApi_HostAddress}}/tasks/
 Accept: application/json
 
-###
+### Get by Id
+
+GET {{TaskManagementApi_HostAddress}}/tasks/52999b71-3cd9-47ed-892f-d6797c2f1438
+Accept: application/json
+
+### Add new Task
+
+POST {{TaskManagementApi_HostAddress}}/tasks/
+Accept: application/json
+Content-Type: application/json
+
+{
+  "id": "{{$uuid}}",
+  "title": "Task Title",
+  "content": "content"
+}
