@@ -18,7 +18,8 @@ public record AddTaskRequest(
             Id = Id,
             Title = Title,
             Content = Content,
-            Completed = false
+            Completed = false,
+            CreatedAt = DateTime.UtcNow
         };
     }
 }

@@ -6,4 +6,5 @@ public class Task
     public required string Title { get; init; }
     public required string? Content { get; init; }
     public required bool Completed { get; init; }
+    public required DateTime CreatedAt { get; init; }
 }
