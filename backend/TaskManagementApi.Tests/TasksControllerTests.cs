@@ -14,7 +14,7 @@ public class TasksControllerTests
     private readonly TaskManagementContext _context;
     private readonly HttpClient _client;
     private readonly Fixture _fixture = new();
-    private const string GetAllTasksRoute = "tasks";
+    private const string TasksRoute = "tasks";
 
     public TasksControllerTests(TaskManagementApplicationFactory factory)
     {
@@ -32,7 +32,7 @@ public class TasksControllerTests
     public async Task Given_get_all_request_when_database_is_empty_should_return_empty_list()
     {
         // Act
-        using var response = await _client.GetAsync(GetAllTasksRoute, TestContext.Current.CancellationToken);
+        using var response = await _client.GetAsync(TasksRoute, TestContext.Current.CancellationToken);
         
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -49,7 +49,7 @@ public class TasksControllerTests
         await SeedTasks([task]);
         
         // Act
-        using var response = await _client.GetAsync(GetAllTasksRoute, TestContext.Current.CancellationToken);
+        using var response = await _client.GetAsync(TasksRoute, TestContext.Current.CancellationToken);
         
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -69,7 +69,7 @@ public class TasksControllerTests
         await SeedTasks([completedTask, notCompletedTask]);
         
         // Act
-        using var response = await _client.GetAsync(GetAllTasksRoute, TestContext.Current.CancellationToken);
+        using var response = await _client.GetAsync(TasksRoute, TestContext.Current.CancellationToken);
         
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -89,7 +89,7 @@ public class TasksControllerTests
         await SeedTasks([taskOne, taskTwo]);
         
         // Act
-        using var response = await _client.GetAsync($"tasks/{taskTwo.Id}", TestContext.Current.CancellationToken);
+        using var response = await _client.GetAsync($"{TasksRoute}/{taskTwo.Id}", TestContext.Current.CancellationToken);
         
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -106,7 +106,7 @@ public class TasksControllerTests
         var id = Guid.NewGuid();
         
         // Act
-        using var response = await _client.GetAsync($"tasks/{id}", TestContext.Current.CancellationToken);
+        using var response = await _client.GetAsync($"{TasksRoute}/{id}", TestContext.Current.CancellationToken);
         
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -117,10 +117,10 @@ public class TasksControllerTests
     {
         // Arrange
         var request = _fixture.Create<Tasks.AddTaskRequest>();
-        var expectedLocation = $"{_client.BaseAddress}tasks/{request.Id}";
+        var expectedLocation = $"{_client.BaseAddress}{TasksRoute}/{request.Id}";
         
         // Act
-        using var response = await _client.PostAsJsonAsync("tasks", request, TestContext.Current.CancellationToken);
+        using var response = await _client.PostAsJsonAsync(TasksRoute, request, TestContext.Current.CancellationToken);
         
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -142,10 +142,10 @@ public class TasksControllerTests
         var request = _fixture.Build<Tasks.AddTaskRequest>()
             .With(x => x.Id, databaseTask.Id)
             .Create();
-        var expectedLocation = $"{_client.BaseAddress}tasks/{request.Id}";
+        var expectedLocation = $"{_client.BaseAddress}{TasksRoute}/{request.Id}";
         
         // Act
-        using var response = await _client.PostAsJsonAsync("tasks", request, TestContext.Current.CancellationToken);
+        using var response = await _client.PostAsJsonAsync(TasksRoute, request, TestContext.Current.CancellationToken);
         
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -157,21 +157,36 @@ public class TasksControllerTests
         Assert.False(task?.Completed);
     }
     
-    [Fact]
-    public async Task Given_toggle_request_should_have_expected_response()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Given_toggle_request_should_have_expected_response(bool completed)
     {
         // Arrange
-        var task = CreateTask(completed: false);
+        var task = CreateTask(completed: !completed);
         await SeedTasks([task]);
         
         // Act
-        using var response = await _client.PutAsJsonAsync($"tasks/{task.Id}", true, TestContext.Current.CancellationToken);
+        using var response = await _client.PutAsJsonAsync($"{TasksRoute}/{task.Id}", completed, TestContext.Current.CancellationToken);
         
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var updatedTask = await _context.Tasks.Where(x => x.Id == task.Id).AsNoTracking()
             .SingleAsync(TestContext.Current.CancellationToken);
-        Assert.True(updatedTask.Completed);
+        Assert.Equal(updatedTask.Completed, completed);
+    }
+    
+    [Fact]
+    public async Task Given_toggle_request_when_an_invalid_id_is_sent_should_return_not_found()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        
+        // Act
+        using var response = await _client.PutAsJsonAsync($"{TasksRoute}/{id}", true, TestContext.Current.CancellationToken);
+        
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private Tasks.Task CreateTask(bool completed = false) =>
