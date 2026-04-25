@@ -52,7 +52,7 @@ public class TaskRepository(
     public async Task<Tasks.Task?> Toggle(Guid id, bool completed, CancellationToken cancellationToken)
     {
         var task = await dbContext.Tasks.FindAsync([id], cancellationToken: cancellationToken);
-        if (task is null || task.Completed == completed)
+        if (task is null)
             return task;
         
         task.Completed = completed;
