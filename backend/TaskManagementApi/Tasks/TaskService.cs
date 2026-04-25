@@ -8,7 +8,7 @@ public interface ITaskService
     Task<IEnumerable<Task>> GetTasks(CancellationToken cancellationToken);
     Task<Task> Add(AddTaskRequest taskRequest, CancellationToken cancellationToken);
     Task<Task?> GetById(Guid id, CancellationToken cancellationToken);
-    System.Threading.Tasks.Task Toggle(Guid id, bool completed, CancellationToken cancellationToken);
+    Task<bool> Toggle(Guid id, bool completed, CancellationToken cancellationToken);
 }
 
 public class TaskService(TaskManagementContext dbContext) : ITaskService
@@ -39,11 +39,13 @@ public class TaskService(TaskManagementContext dbContext) : ITaskService
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async System.Threading.Tasks.Task Toggle(Guid id, bool completed, CancellationToken cancellationToken)
+    public async Task<bool> Toggle(Guid id, bool completed, CancellationToken cancellationToken)
     {
-        await dbContext
+        var updatedRows = await dbContext
             .Set<Task>()
             .Where(x => x.Id == id)
             .ExecuteUpdateAsync(x => x.SetProperty(t => t.Completed, completed), cancellationToken);
+        
+        return updatedRows > 0;
     }
 }
