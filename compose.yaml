@@ -48,3 +48,11 @@
     environment:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
       - ConnectionStrings__PostgresConnection=Server=db;Database=TaskManagementDb;User Id=user;Password=password;
+
+  frontend:
+    ports:
+      - "5173:80"
+    build:
+      context: frontend/
+      dockerfile: Dockerfile
+    
