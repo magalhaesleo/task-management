@@ -8,7 +8,9 @@ export default function TaskList({ tasks, onToggle }) {
     return (
         <ul>
             {tasks.map((task) => (
-                <TaskItem task={task} onToggle={onToggle} />
+                <li key={task.id}>
+                    <TaskItem task={task} onToggle={onToggle} />
+                </li>
             ))}
         </ul>
     );
