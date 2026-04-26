@@ -35,12 +35,10 @@ public class TasksController(ITaskRepository taskRepository) : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = task.Id }, task);
     }
     
-    public record ToggleTaskRequest(bool Completed);
-    
     [HttpPatch("{id:guid}")]
     public async Task<ActionResult> Toggle(
         [FromRoute] Guid id,
-        [FromBody] ToggleTaskRequest request,
+        [FromBody] Tasks.ToggleTaskRequest request,
         CancellationToken cancellationToken)
     {
         var task = await taskRepository.Toggle(id, request.Completed, cancellationToken);

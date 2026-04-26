@@ -166,7 +166,7 @@ public class TasksControllerTests
         // Arrange
         var task = CreateTask(completed: !completed);
         await SeedTasks([task]);
-        var request = new TasksController.ToggleTaskRequest(completed);
+        var request = new Tasks.ToggleTaskRequest(completed);
         
         // Act
         using var response = await _client.PatchAsJsonAsync($"{TasksRoute}/{task.Id}", request, TestContext.Current.CancellationToken);
@@ -183,7 +183,7 @@ public class TasksControllerTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        var request = new TasksController.ToggleTaskRequest(true);
+        var request = new Tasks.ToggleTaskRequest(true);
         
         // Act
         using var response = await _client.PatchAsJsonAsync($"{TasksRoute}/{id}", request, TestContext.Current.CancellationToken);
