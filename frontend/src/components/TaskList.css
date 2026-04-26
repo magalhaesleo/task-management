@@ -1,0 +1,45 @@
+﻿.task-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+    margin-top: 24px;
+
+    @media (max-width: 700px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.task-column {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+
+    h2 {
+        margin: 0 0 12px;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-h);
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+.task-column--completed {
+    opacity: 0.6;
+}
+
+.column-empty {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text);
+    opacity: 0.5;
+}
