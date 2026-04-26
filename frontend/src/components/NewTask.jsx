@@ -3,6 +3,8 @@ import { v7 as uuidv7 } from 'uuid';
 
 import api from "../services/api";
 
+import './NewTask.css';
+
 export default function NewTask({ onAdd }) {
 
     const [title, setTitle] = useState('');
@@ -38,26 +40,23 @@ export default function NewTask({ onAdd }) {
     };
 
     return (
-        <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
-            <div>
-                <input
-                    type="text"
-                    placeholder="Title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                />
-            </div>
-
-            <div>
-                <textarea
-                    placeholder="Content"
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                />
-            </div>
-
-            <button type="submit" disabled={loading}>
-                {loading ? "Adding..." : "Add Task"}
+        <form className="new-task-form" onSubmit={handleSubmit}>
+            <input
+                className="new-task-input"
+                type="text"
+                placeholder="Task title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+            />
+            <textarea
+                className="new-task-textarea"
+                placeholder="Description (optional)"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                rows={3}
+            />
+            <button className="new-task-btn" type="submit" disabled={loading || !title.trim()}>
+                {loading ? "Adding…" : "Add Task"}
             </button>
         </form>
     );

@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-
-import './App.css';
 import TaskList from './components/TaskList';
 import NewTask from './components/NewTask';
 import api from './services/api';
