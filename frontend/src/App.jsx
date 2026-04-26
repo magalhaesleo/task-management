@@ -16,7 +16,7 @@ function App() {
 
   return (
     <div>
-      <h1>Tasks</h1>
+      <h1>Tasks Management</h1>
       <NewTask onAdd={() => loadTasks()} />
       <TaskList tasks={tasks} onToggle={() => loadTasks()} />
     </div>

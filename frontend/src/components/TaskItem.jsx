@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 
 import api from "../services/api";
 
+import './TaskItem.css';
+
 export default function TaskItem({ task, onToggle }) {
 
     const [completed, setCompleted] = useState(task.completed);
@@ -29,10 +31,11 @@ export default function TaskItem({ task, onToggle }) {
     };
 
     return (
-        <div>
+        <div className="task-item">
             <div>
-                <label>
+                <label className="task-checkbox-container">
                     <input
+                        className="task-checkbox-input"
                         type="checkbox"
                         checked={task.completed}
                         onChange={handleChange}
@@ -40,7 +43,7 @@ export default function TaskItem({ task, onToggle }) {
                     {task.title}
                 </label>
             </div>
-            <div style={{ marginLeft: "24px", color: "#555" }}>
+            <div className="task-content">
                 {task.content}
             </div>
         </div>
