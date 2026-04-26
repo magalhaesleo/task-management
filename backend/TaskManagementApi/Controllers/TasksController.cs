@@ -35,13 +35,15 @@ public class TasksController(ITaskRepository taskRepository) : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = task.Id }, task);
     }
     
+    public record ToggleTaskRequest(bool Completed);
+    
     [HttpPatch("{id:guid}")]
     public async Task<ActionResult> Toggle(
         [FromRoute] Guid id,
-        [FromBody] bool completed,
+        [FromBody] ToggleTaskRequest request,
         CancellationToken cancellationToken)
     {
-        var task = await taskRepository.Toggle(id, completed, cancellationToken);
+        var task = await taskRepository.Toggle(id, request.Completed, cancellationToken);
         if (task is null)
             return NotFound($"Task with ID {id} not found.");
         

@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using AutoFixture;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using TaskManagementApi.Controllers;
 using TaskManagementApi.Infrastructure;
 
 namespace TaskManagementApi.Tests;
@@ -165,9 +166,10 @@ public class TasksControllerTests
         // Arrange
         var task = CreateTask(completed: !completed);
         await SeedTasks([task]);
+        var request = new TasksController.ToggleTaskRequest(completed);
         
         // Act
-        using var response = await _client.PatchAsJsonAsync($"{TasksRoute}/{task.Id}", completed, TestContext.Current.CancellationToken);
+        using var response = await _client.PatchAsJsonAsync($"{TasksRoute}/{task.Id}", request, TestContext.Current.CancellationToken);
         
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -181,9 +183,10 @@ public class TasksControllerTests
     {
         // Arrange
         var id = Guid.NewGuid();
+        var request = new TasksController.ToggleTaskRequest(true);
         
         // Act
-        using var response = await _client.PatchAsJsonAsync($"{TasksRoute}/{id}", true, TestContext.Current.CancellationToken);
+        using var response = await _client.PatchAsJsonAsync($"{TasksRoute}/{id}", request, TestContext.Current.CancellationToken);
         
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
