@@ -32,6 +32,16 @@ public class Program
         builder.Services.AddDbContext<TaskManagementContext>(opt => opt.UseNpgsql(postgresConnection));
         builder.Services.AddTransient<ITaskRepository, TaskRepository>();
 
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowFrontend", policy =>
+            {
+                policy.WithOrigins("http://localhost:5173")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
+        });
+
         var app = builder.Build();
 
         app.MapHealthChecks("/health");
@@ -45,6 +55,8 @@ public class Program
         app.UseHttpsRedirection();
 
         app.UseAuthorization();
+        
+        app.UseCors("AllowFrontend");
         
         app.MapControllers();
 
