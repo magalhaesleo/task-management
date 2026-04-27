@@ -12,6 +12,7 @@ A full-stack task management application built with ASP.NET Core (backend) and R
 - [Database Migrations](#database-migrations)
 - [Idempotent Task Creation](#idempotent-task-creation)
 - [Tests](#tests)
+- [Assumptions & Trade-offs](#assumptions--trade-offs)
 - [Next Steps](#next-steps)
 
 ---
@@ -219,6 +220,31 @@ The integration tests cover:
 ### Unit tests
 
 `AddTaskRequestTests` validates the request DTO in isolation, covering the `[NotEmptyGuid]` custom attribute, title (required, max 255 chars), and content (optional, max 1000 chars) constraints.
+
+---
+
+## Assumptions & Trade-offs
+
+### Assumptions
+
+- **Single user, no authentication** — The app assumes a single trusted user. No auth middleware, identity service, or permission checks are in place. `app.UseAuthorization()` is declared but nothing is protected.
+- **Backend is the source of truth for validation** — The frontend only prevents submitting an empty title. All constraint enforcement (GUID format, string lengths) lives on the server.
+- **Tasks are immutable after creation** — Only the `Completed` flag can change. Title and content cannot be edited once a task is created.
+- **UTC timestamps, no timezone handling** — `CreatedAt` is always stored as UTC; the UI makes no attempt to display it in the user's local timezone.
+- **No multi-tenancy** — All tasks are global; there is no concept of ownership, projects, or workspaces.
+
+### What was left out
+
+| Feature | Reason |
+|---|---|
+| **DELETE endpoint** | Out of scope for MVP; noted in Next Steps |
+| **Edit task** | Keeping tasks immutable simplifies the model and avoids update conflicts |
+| **Pagination / filtering / sorting** | `GET /tasks` returns everything; acceptable for small datasets |
+| **Soft deletes** | No audit trail needed at this stage |
+| **Real-time updates** | No WebSockets/SSE — the UI reflects the state at load time; other users' changes are invisible until refresh |
+| **User-facing error messages** | API errors are caught but only logged to the browser console; the UI does not surface them |
+| **Frontend observability** | OpenTelemetry is backend-only; no client-side error tracking or performance monitoring |
+| **CQRS / MediatR** | Repository pattern was sufficient for the scope; introducing a mediator would add complexity without benefit here |
 
 ---
 
